@@ -21,12 +21,8 @@ def daubecies_a_filters(N):
 	l[-1],l[0],l[1],l[2] = -1*(1 + np.sqrt(3))/8, (3+np.sqrt(3))/8, -1*(3-np.sqrt(3))/8, (1-np.sqrt(3))/8
 	return l,h
 
-def padded(f):
-	N = f.size
-	return np.concatenate((f,np.zeros(N)))
 
 def conv(f,g,n):
-	f,g = padded(f),padded(g)
 	N = f.size
 	conv = 0
 	for m in range(N):

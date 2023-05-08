@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 ##Utility
-def Pix_transform(pix,T): 
-	return np.matmul(pix,T)
+
 
 def Color_Matrix_YUV(Kr, Kb):
 	Kg = 1 - Kr - Kb
@@ -28,16 +27,9 @@ def Color_Matrix_RCT():
 	r2 = [0,-1,1]
 	r3 = [1,-1,0]
 	return np.array([r1,r2,r3])
-##Removing Gamma Component
-__rg = lambda x: x[:,:,0:3]
-_rg = lambda x:__rg(x)
-rg = lambda x:_rg(x)
 
-
-##Transform Each set of pixels
-__t = lambda x,T: Pix_transform(x,T)
-_t = lambda x,T: __t(x,T)
-t = lambda x,T: _t(x,T)
+def normalize(X):
+	return X / X.max()
 
 ###Actual Functions
 
@@ -48,12 +40,9 @@ def transform(Kr, Kb, Type,Im):
 		T= Color_Matrix_YUV(Kr,Kb)
 	else:
 		T= Color_Matrix_BT(Kr,Kb)
-	pixels = rg(np.array(Im))
-	transform = t(pixels,T)
-	Pr = np.array(transform[:,:,2]) ## or Hue
-	Pb = np.array(transform[:,:,1]) ## or saturation
-	y = np.array(transform[:,:,0]) ##intensity or value
-	return y,Pb,Pr
+	pixels = np.array(Im)[:,:,0:3]
+	transform = normalize(np.matmul(pixels,T))
+	return transform[:,:,0],transform[:,:,1],transform[:,:,2] 
 
 def inverse_transform(Kr,Kb,Type,Im):
 	if(Type == 0):
@@ -61,14 +50,11 @@ def inverse_transform(Kr,Kb,Type,Im):
 	else:
 		T= Color_Matrix_BT(Kr,Kb)
 	T_inv = np.linalg.inv(T)
-	transform = t(pixels,T_inv)
-	Pr = transform[:,:,2] ## or Hue
-	Pb = transform[:,:,1] ## or saturation
-	y = transform[:,:,0] ##intensity or value
-	return y,Pb,Pr
-
+	pixels = np.array(Im)[:,:,0:3]
+	transform = np.matmul(pixels,T_inv)
+	return transform[:,:,0],transform[:,:,1],transform[:,:,2] 
 def show_color_transform(Im, y,Pb,Pr):
-	output = [Im, y, Pb, Pr]
+	output = [Im, Pr, Pb, y]
 	title = ['Image','Hue','Saturation','Value']
 	for i in range(4):
 		plt.subplot(2,2,i+1)
@@ -80,3 +66,20 @@ def show_color_transform(Im, y,Pb,Pr):
 			plt.imshow(output[i], cmap = 'gray')    
 	plt.show()
 
+
+def show_RGB(Im, R,G,B):
+	output = [Im, R, G, B]
+	title = ['Image','Red','Green','Blue']
+	for i in range(4):
+		plt.subplot(2,2,i+1)
+		plt.axis('off')
+		plt.title(title[i])
+		if i == 0:
+			plt.imshow(output[i])
+		if i == 1:
+			plt.imshow(output[i], cmap = 'Reds')    
+		if i == 2:
+			plt.imshow(output[i], cmap = 'Greens')
+		if i == 3:
+			plt.imshow(output[i], cmap = 'Blues')        
+	plt.show()
